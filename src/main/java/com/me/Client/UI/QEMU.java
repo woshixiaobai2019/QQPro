@@ -4,6 +4,7 @@ import com.me.Const.LoginObject;
 import com.me.Const.SignObject;
 import com.me.Const.UserConst;
 import com.me.Interface.Act;
+import com.me.utils.ClientInitUtils;
 
 import java.io.*;
 import java.awt.event.*;
@@ -15,7 +16,7 @@ public class QEMU extends CommonUI{
     private SignFace signFace;
     //    private final UserService userService = new UserServiceImpl();
     public QEMU() throws IOException {
-        super("登录",new Socket("localhost",8888),"login");
+        super("登录",new Socket(ClientInitUtils.getHost(),ClientInitUtils.getPort()),"login");
     }
     public QEMU(Socket socket) throws IOException {
         super("登录",socket,"login");
@@ -46,7 +47,7 @@ public class QEMU extends CommonUI{
             //调用注册
             try {
                 if (signFace ==null) {
-                    signFace = new SignFace(new Socket("localhost", 8888), this);//注册和登录用同一个uiCore
+                    signFace = new SignFace(new Socket(ClientInitUtils.getHost(),ClientInitUtils.getPort()), this);//注册和登录用同一个uiCore
                 }else{
                     signFace.setVisible(true);
                 }
@@ -83,7 +84,7 @@ public class QEMU extends CommonUI{
             //验证成功创建一个主窗口
             this.alert(login,"SUCCESS");
             try {
-                this.client = new Client(this.user,new Socket("localhost",8888)); //如果成功了就把这个socket给客户端
+                this.client = new Client(this.user,new Socket(ClientInitUtils.getHost(),ClientInitUtils.getPort())); //如果成功了就把这个socket给客户端
                 this.dispose();
                 this.uiCore.socket.close();
                 if (this.signFace!=null) {

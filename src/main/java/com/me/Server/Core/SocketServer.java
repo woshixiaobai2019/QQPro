@@ -8,6 +8,7 @@ import com.me.Server.Service.UserService;
 import com.me.Server.Service.UserServiceImpl;
 import com.me.domain.User;
 import com.me.utils.MyIOUtils;
+import com.me.utils.ServerInitUtils;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -23,7 +24,7 @@ public class SocketServer{
     private final ServerSocket serverSocket;
     private final UserService userService = new UserServiceImpl();
     public SocketServer() throws IOException {
-        this.serverSocket = new ServerSocket(8888);
+        this.serverSocket = new ServerSocket(ServerInitUtils.getPort());
         Logger.info(this.serverSocket+"-服务器正在运行中,等待连接...");
         this.accept(); // FIXME: 2020/10/12 在聊天和登录注册最好不使用同一个socket对象，否则会造成并发问题
     }
