@@ -7,7 +7,6 @@ import com.me.Const.SignObject;
 import com.me.Const.UserConst;
 import com.me.Interface.Act;
 import com.me.utils.MyIOUtils;
-
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -31,11 +30,6 @@ public abstract class CommonUI extends JFrame implements ActionListener {
     protected String name;
     protected Client client;
     protected Thread thread;
-
-    public void setUiCore(UICore uiCore) {
-        this.uiCore = uiCore;
-    }
-
     //构造方法
     public CommonUI(String name,Socket socket,String component) throws IOException {
         this.name = name;
@@ -118,7 +112,7 @@ public abstract class CommonUI extends JFrame implements ActionListener {
     }
     protected abstract void action(ActionEvent e);
 
-    //具体事件的处理
+    //切换验证码
     @Override
     public void actionPerformed(ActionEvent e)
     {
@@ -146,6 +140,11 @@ public abstract class CommonUI extends JFrame implements ActionListener {
         return !flag;
     }
 
+    /**
+     * 检查验证码是否填写正确
+     * @param code 用户填写的验证码
+     * @return 正确就返回true
+     */
     protected boolean checkCode(String code){
         return code.equalsIgnoreCase(mp.getSb().toString());
     }
@@ -156,7 +155,16 @@ public abstract class CommonUI extends JFrame implements ActionListener {
         dialog.show();
     }
 
+    /**
+     * 处理注册响应回来的请求
+     * @param obj 服务器验证注册后返回的数据
+     */
     protected abstract void signRequestBack(SignObject obj);
+
+    /**
+     * 处理登录回来的相应请求,
+     * @param obj
+     */
     protected abstract void loginRequestBack(LoginObject obj);
     class CloseListener implements WindowListener {
         @Override
@@ -228,10 +236,6 @@ public abstract class CommonUI extends JFrame implements ActionListener {
             }
         }
 
-        @Override
-        protected void alert_(String msg, String type) {
-            alert(msg, type);
-        }
 
     }
 }

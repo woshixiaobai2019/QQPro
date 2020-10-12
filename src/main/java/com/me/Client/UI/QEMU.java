@@ -85,6 +85,10 @@ public class QEMU extends CommonUI{
             try {
                 this.client = new Client(this.user,new Socket("localhost",8888)); //如果成功了就把这个socket给客户端
                 this.dispose();
+                this.uiCore.socket.close();
+                if (this.signFace!=null) {
+                    this.signFace.uiCore.socket.close();
+                }
             } catch (IOException ioException) {
                 alert(UserConst.CREAT_WINDOW_FAILED,"ERROR");
             }

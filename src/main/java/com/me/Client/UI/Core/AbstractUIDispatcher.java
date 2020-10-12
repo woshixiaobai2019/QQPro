@@ -17,7 +17,7 @@ import java.io.IOException;
 import java.net.Socket;
 
 public abstract class AbstractUIDispatcher implements Dispatcher, UI {
-    private boolean running = true;
+    private boolean running = true; //是否运行
     public final Socket socket;
     private final String name;
     public AbstractUIDispatcher(String name,Socket socket){
@@ -36,13 +36,18 @@ public abstract class AbstractUIDispatcher implements Dispatcher, UI {
             }
         }
         catch (IOException e) {
-           alert_(UserConst.SERVER_CLOSED,"INFO");
            running = false;
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }
     }
-    protected abstract void alert_(String msg,String type);
+
+    /**
+     *
+     * @param msg 弹窗的消息
+     * @param type 弹窗的类型:ERROR INFO
+     */
+
     @Override
     public void run() {
         while (running){

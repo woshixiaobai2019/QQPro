@@ -21,11 +21,9 @@ import java.net.Socket;
 public class Client extends JFrame {
     // TODO: 2020/10/11 完善登录和注册功能,去掉refresh直接改为接受返回值
     private final String username;
-    private final ObjectMapper mapper = new ObjectMapper(); // TODO: 2020/10/12 将所有的mapper改为直接发送对象
     private final ClientCore clientCore;
     private JTextArea recv;
     private JTextArea send;
-
     private DefaultListModel<String> online;
     private DefaultListModel<String> friends;
     private JList<String> onlineList;
@@ -139,30 +137,36 @@ public class Client extends JFrame {
         window.setVisible(true);//设置面板可见
 
     }
+
+    /**
+     * 检查是否选择了发送文件的对象
+     * @return 选择了就是true
+     */
     private boolean friendChooseCheck(){
         return friendsList.getSelectedValue() != null;
     }
+
+    /**
+     * 检查是否选择了发送私聊消息的对象
+     * @return 选择就是true，否则就是否
+     */
     private boolean onlineChooseCheck(){
         return onlineList.getSelectedValue() != null;
     }
-//    private void refresh() {
-//        ObjectMapper mapper = new ObjectMapper();
-//        try {
-//            String s = mapper.writeValueAsString(new RefreshObject());
-//            MyIOUtils.send(s,clientCore.socket.getOutputStream());
-//        } catch (JsonProcessingException e) {
-//            e.printStackTrace();
-//        } catch (IOException e) {
-//            alert(UserConst.SERVER_CLOSED,"INFO");
-//        }
-//
-//    }
     private void alert(String msg,String type){
         //如果错误则弹出一个显示框
         JOptionPane pane = new JOptionPane(msg);
         JDialog dialog = pane.createDialog(this, type);
         dialog.show();
     }
+
+    /**
+     *
+     * @param path 选择的文件的路径
+     * @param from 由谁发送的
+     * @param to 发送给谁
+     * @return 返回包装好的文件对象
+     */
     private SingleFileObj parse(String path,String from,String to){
         File file = new File(path);
         SingleFileObj obj = new SingleFileObj();
@@ -174,6 +178,10 @@ public class Client extends JFrame {
         obj.setPath(path);
         return obj;
     }
+
+    /**
+     * 私聊的事件监听对象
+     */
     class SingleSendListener implements ActionListener{
         @Override
         public void actionPerformed(ActionEvent e) {
@@ -193,6 +201,10 @@ public class Client extends JFrame {
             }
         }
     }
+
+    /**
+     * 发送文件的时间监听对象
+     */
     class FileSendListener implements  ActionListener{
         @Override
         public void actionPerformed(ActionEvent e) {
@@ -217,6 +229,10 @@ public class Client extends JFrame {
             }
         }
     }
+
+    /**
+     * 选择文件的事件监听对象
+     */
     class FileChooseListener implements ActionListener{
         @Override
         public void actionPerformed(ActionEvent e) {
@@ -229,6 +245,10 @@ public class Client extends JFrame {
             } catch (Exception ignore) {}
         }
     }
+
+    /**
+     * 删除朋友按钮的时间监听对象
+     */
     class DeleteFriendListener implements ActionListener{
         @Override
         public void actionPerformed(ActionEvent e) {
@@ -249,6 +269,10 @@ public class Client extends JFrame {
 
         }
     }
+
+    /**
+     * 添加朋友的事件监听对象
+     */
     class AddFriendListener implements ActionListener{
         @Override
         public void actionPerformed(ActionEvent e) {
@@ -269,6 +293,10 @@ public class Client extends JFrame {
 
         }
     }
+
+    /**
+     * 窗口关闭的事件监听对象,关闭时同时需要关闭socket
+     */
     class CloseListener implements WindowListener{
         @Override
         public void windowOpened(WindowEvent e) {

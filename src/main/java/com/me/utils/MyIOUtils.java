@@ -1,14 +1,7 @@
 package com.me.utils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.me.Const.ALlMessageObject;
-import com.me.Const.LoginObject;
-import com.me.Const.RefreshObject;
-import com.me.Const.SignObject;
-import com.sun.xml.internal.ws.policy.privateutil.PolicyUtils;
-
 import java.io.*;
-import java.lang.ref.Reference;
 
 public class MyIOUtils {
     public static final ObjectMapper mapper = new ObjectMapper();
@@ -25,22 +18,11 @@ public class MyIOUtils {
         ObjectInputStream objectInputStream = new ObjectInputStream(di);
         return objectInputStream.readObject();
     }
-
-    public static void send(String msg,OutputStream os) throws IOException {
-        DataOutputStream out = new DataOutputStream(os);
-        out.writeUTF(msg);
-        out.flush();
-    }
     public static void send(Object obj,OutputStream os) throws IOException {
         ObjectOutputStream objectOutputStream = new ObjectOutputStream(os);
         objectOutputStream.writeObject(obj);
         objectOutputStream.flush();
     }
-//    public static void send(RefreshObject obj,OutputStream os)throws IOException{
-//        DataOutputStream ous = new DataOutputStream(os);
-//        ous.writeUTF(mapper.writeValueAsString(obj));
-//        ous.flush();
-//    }
 
     public static void swap(InputStream is,OutputStream os,long size) throws IOException {
         long readSize = 0;
@@ -61,22 +43,4 @@ public class MyIOUtils {
         }
     }
 
-
-//    public static void send(ALlMessageObject obj, OutputStream os)throws IOException {
-//        DataOutputStream ous = new DataOutputStream(os);
-//        ous.writeUTF(mapper.writeValueAsString(obj));
-//        ous.flush();
-//    }
-//
-//    public static void send(LoginObject obj, OutputStream os)throws IOException {
-//        DataOutputStream ous = new DataOutputStream(os);
-//        ous.writeUTF(mapper.writeValueAsString(obj));
-//        ous.flush();
-//    }
-//
-//    public static void send(SignObject obj, OutputStream os) throws IOException{
-//        DataOutputStream ous = new DataOutputStream(os);
-//        ous.writeUTF(mapper.writeValueAsString(obj));
-//        ous.flush();
-//    }
 }

@@ -22,7 +22,6 @@ public class SocketServer{
     private Integer online = 0;
     private final ServerSocket serverSocket;
     private final UserService userService = new UserServiceImpl();
-    private final ObjectMapper mapper = new ObjectMapper();
     public SocketServer() throws IOException {
         this.serverSocket = new ServerSocket(8888);
         Logger.info(this.serverSocket+"-服务器正在运行中,等待连接...");
@@ -42,6 +41,12 @@ public class SocketServer{
             }
         }
     }
+
+    /**
+     * 获取当前在线的人和朋友们
+     * @param name 获取谁的朋友
+     * @return
+     */
     private RefreshObject getRefreshObject(String name){
         //获取在线的人和朋友
         this.refreshObject.setFriends(getFriendsName(name));
@@ -49,10 +54,21 @@ public class SocketServer{
         this.refreshObject.setWho(name);
         return this.refreshObject;
     }
+
+    /**
+     * 获取当前所有在线的人并返回
+     * @return
+     */
     private String[] getOnlineName(){
         return users.keySet().toArray(new String[users.keySet().size()]);
 
     }
+
+    /**
+     * 获取某位用户的所有朋友
+     * @param name
+     * @return
+     */
     public String[] getFriendsName(String name){
         ArrayList<String> strings = new ArrayList<>();
         List<User> friends =  userService.getFriends(name);
@@ -63,6 +79,12 @@ public class SocketServer{
         }
         return strings.toArray(new String[strings.size()]);
     }
+
+    /**
+     * 检查某位用户是否登录
+     * @param name
+     * @return
+     */
     private boolean isLogin(String name){
         return users.containsKey(name);
     }
@@ -102,42 +124,10 @@ public class SocketServer{
             }
             running = false;
         }
-
-//        private void recv() {
-//            try {
-//                String recv = MyIOUtils.recv(this.socket.getInputStream());
-//                try {
-//                    mapper.readValue(recv, RefreshObject.class);
-//                    refresh();
-//                } catch (JsonProcessingException e) {
-//                    try {
-//                        SingleFileObj singleFileObj = mapper.readValue(recv, SingleFileObj.class);
-//                        singleContact(singleFileObj);
-//                    } catch (JsonProcessingException jsonProcessingException) {
-//                        try {
-//                            SingleChatObj singleChatObj = mapper.readValue(recv, SingleChatObj.class);
-//                            singleContact(singleChatObj);
-//                        } catch (JsonProcessingException processingException) {
-//                            Logger.info(this.name+"->recvMsg:"+recv);
-//                            spread(this.name+":"+recv,false);
-//                        }
-//                    }
-//                }
-//
-//
-//            } catch (IOException e) {
-//                offLine();
-//                spread(getOnlineName(),true);
-//                refresh();
-//                this.close();
-//            }
-//
-//        }
-
         private void singleContact(SingleFileObj singleFileObj) {
             Socket socket = users.get(singleFileObj.getTo());
             try {
-                Logger.info("::FILE:"+singleFileObj+"\nFILE_SIZE:"+(singleFileObj.getSize()/1024)+"kb");
+
                 MyIOUtils.send(singleFileObj,socket.getOutputStream());
                 MyIOUtils.swap(this.socket.getInputStream(),socket.getOutputStream(),singleFileObj.getSize());
             } catch (IOException e) {
@@ -158,17 +148,6 @@ public class SocketServer{
             }
             running = false;
             Logger.info("当前在线::"+ Arrays.toString(getOnlineName()));
-        }
-        private void singleContact(SingleChatObj singleChatObj){
-            Socket socket = users.get(singleChatObj.getTo());
-            try {
-                MyIOUtils.send(singleChatObj,socket.getOutputStream());
-                Logger.info(singleChatObj.getFrom()+"->"+singleChatObj.getTo()+"::MSG:"+singleChatObj.getMsg());
-            } catch (IOException e) {
-                offLine_();
-                this.close();
-                Logger.error(e.getMessage());
-            }
         }
         private void spread(ALlMessageObject obj,boolean all){
             Logger.info(this.name+"-spread-ALL?"+all+"::"+obj.getMsg());
@@ -234,6 +213,7 @@ public class SocketServer{
             }else{
                 login = UserConst.HAVE_LOGGED;
             }
+            Logger.info(obj.getUsername()+"登录结果:"+login);
             loginObject.setLogin(login);
             try {
                 MyIOUtils.send(loginObject, socket.getOutputStream());
@@ -247,6 +227,7 @@ public class SocketServer{
             String sign = userService.sign(obj.getUsername(), obj.getPassword());
             SignObject signObject = new SignObject();
             signObject.setSign(sign);
+            Logger.info(obj.getUsername()+"注册结果:"+sign);
             try {
                 MyIOUtils.send(signObject, this.socket.getOutputStream());
             } catch (IOException e) {

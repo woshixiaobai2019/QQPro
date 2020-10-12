@@ -1,8 +1,6 @@
 package com.me.utils;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.me.Const.ALlMessageObject;
 import com.me.Const.SingleChatObj;
 import com.me.Const.SingleFileObj;
 import com.me.Const.UserConst;
@@ -65,40 +63,6 @@ public class IOGUIUtils {
 
 
     }
-
-//    public static void send(JTextArea textArea, OutputStream os) throws IOException {
-//        String text = textArea.getText();
-//        sendHistory.append(text);
-//        DataOutputStream dos = new DataOutputStream(os);
-//        dos.writeUTF(text);
-//        dos.flush();
-//    }
-//    public static void send(String text, OutputStream os) throws IOException {
-//        sendHistory.append(text);
-//        DataOutputStream dos = new DataOutputStream(os);
-//        dos.writeUTF(text);
-//        dos.flush();
-//    }
-//    public static void send(ALlMessageObject obj,OutputStream os) throws IOException {
-//        String s = mapper.writeValueAsString(obj);
-//        DataOutputStream outputStream = new DataOutputStream(os);
-//        outputStream.writeUTF(s);
-//        outputStream.flush();
-//    }
-//    public static void send(JTextArea textArea,ALlMessageObject obj,OutputStream os) throws IOException {
-//        obj.setMsg(textArea.getText());
-//        try {
-//            String s = mapper.writeValueAsString(obj);
-//            DataOutputStream outputStream = new DataOutputStream(os);
-//            outputStream.writeUTF(s);
-//            outputStream.flush();
-//        } catch (JsonProcessingException e) {
-//            e.printStackTrace();
-//        }
-//
-//        //私聊
-//    }
-
     public static void fileTransfer(String path,OutputStream os) throws IOException{
         FileInputStream fis = new FileInputStream(path);
         byte[] content = new byte[1024 * 500]; //每次读500k
