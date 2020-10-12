@@ -20,5 +20,6 @@ import java.net.URL;
 public class UserTest {
     @Test
     public void test1() throws IOException {
+        System.out.println("test");
     }
 }
