@@ -22,4 +22,5 @@ public class UserConst {
     public static final String RECV_MSG_ERROR = "接收消息失败";
     public static final String CREAT_WINDOW_FAILED = "创建窗口失败";
     public static final String HAVE_LOGGED = "该用户已经登录";
+    public static final String EMPTY_MSG = "不能发送空消息";
 }

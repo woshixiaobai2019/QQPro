@@ -152,6 +152,7 @@ public class SocketServer{
         }
         private void spread(ALlMessageObject obj,boolean all){
             Logger.info(this.name+"-spread-ALL?"+all+"::"+obj.getMsg());
+            obj.setMsg(this.name+":"+obj.getMsg());
             for (Socket value : users.values()) {
                 if (all || value!=this.socket){
                     try {

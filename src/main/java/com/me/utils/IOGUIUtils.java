@@ -22,11 +22,12 @@ public class IOGUIUtils {
         textArea.setCaretPosition(textArea.getDocument().getLength());
     }
     public static void recv(DefaultListModel<String> jList, String[] s) {
-        jList.clear();
-        for (String s1 : s) {
-            jList.addElement(s1);
+        synchronized (IOGUIUtils.class) {
+            jList.clear();
+            for (String s1 : s) {
+                jList.addElement(s1);
+            }
         }
-
     }
 
     public static void recv(JTextArea jTextArea,SingleChatObj obj){

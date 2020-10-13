@@ -6,6 +6,7 @@ import com.me.Const.*;
 import com.me.Interface.Act;
 import com.me.Server.Service.UserService;
 import com.me.Server.Service.UserServiceImpl;
+import com.me.utils.Logger;
 import com.me.utils.MyIOUtils;
 import com.me.utils.IOGUIUtils;
 import javax.swing.*;
@@ -16,6 +17,7 @@ import java.awt.event.WindowListener;
 import java.io.File;
 import java.io.IOException;
 import java.net.Socket;
+import java.util.Arrays;
 
 
 public class Client extends JFrame {
@@ -36,10 +38,13 @@ public class Client extends JFrame {
     private JButton fileChooser;
     public Client(String username,Socket socket) throws IOException {
         this.username = username;
+        this.clientCore = new ClientCore(socket);
         this.init();
         this.recv.setEnabled(false);
-        this.clientCore = new ClientCore(socket);
         new Thread(clientCore).start();
+        IntroduceObject introduceObject = new IntroduceObject(); //等界面加载完毕之后再发送
+        introduceObject.setName(username);
+        clientCore.introduceSelf(introduceObject);
     }
     private void init() {
         JFrame window = new JFrame("MyQQ-"+username);
@@ -138,21 +143,6 @@ public class Client extends JFrame {
 
     }
 
-    /**
-     * 检查是否选择了发送文件的对象
-     * @return 选择了就是true
-     */
-    private boolean friendChooseCheck(){
-        return friendsList.getSelectedValue() != null;
-    }
-
-    /**
-     * 检查是否选择了发送私聊消息的对象
-     * @return 选择就是true，否则就是否
-     */
-    private boolean onlineChooseCheck(){
-        return onlineList.getSelectedValue() != null;
-    }
     private void alert(String msg,String type){
         //如果错误则弹出一个显示框
         JOptionPane pane = new JOptionPane(msg);
@@ -191,11 +181,16 @@ public class Client extends JFrame {
         private void singleSend() {
             String selectedValue = friendsList.getSelectedValue();
             if (selectedValue!=null){
+                String msg = send.getText();
+                if (msg!=null && !"".equals(msg)) {
                     SingleChatObj singleChatObj = new SingleChatObj();
-                    singleChatObj.setMsg(send.getText());
+                    singleChatObj.setMsg(msg);
                     singleChatObj.setFrom(username);
                     singleChatObj.setTo(selectedValue);
-                    clientCore.chat(singleChatObj,Act.SEND);
+                    clientCore.chat(singleChatObj, Act.SEND);
+                }else{
+                    alert(UserConst.EMPTY_MSG,"ERROR");
+                }
             }else{
                 alert(UserConst.FRIEND_NOT_CHOOSE,"INFO");
             }
@@ -258,7 +253,7 @@ public class Client extends JFrame {
 
         private void delete(ActionEvent e) {
             String friend = friendsList.getSelectedValue();
-            if (friendChooseCheck()){
+            if (friend!=null){
                 DeleteFriendObject deleteFriendObject = new DeleteFriendObject();
                 deleteFriendObject.setUsername(username);
                 deleteFriendObject.setFriend(friend);
@@ -280,15 +275,16 @@ public class Client extends JFrame {
         }
         private void addFriend(ActionEvent e) {
             String friend = onlineList.getSelectedValue();
-            if (onlineChooseCheck() &&!friend.equals(username) ){
+            if (friend!=null &&!friend.equals(username) ){
                 AddFriendObject addFriendObject = new AddFriendObject();
                 addFriendObject.setUsername(username);
                 addFriendObject.setFriend(friend);
                 clientCore.addFriend(addFriendObject,Act.SEND);
-            }else if(friend.equals(username)){
-                alert(UserConst.ADD_SELF_ERROR,"ERROR");
-            }else{
+            }else if(friend==null){
                 alert(UserConst.USER_NOT_CHOOSE,"ERROR");
+
+            }else {
+                alert(UserConst.ADD_SELF_ERROR,"ERROR");
             }
 
         }
@@ -339,22 +335,23 @@ public class Client extends JFrame {
     class SendListener implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
-
+            String msg = send.getText();
+            if (msg!=null && !"".equals(msg)) {
                 ALlMessageObject aLlMessageObject = new ALlMessageObject();
-                aLlMessageObject.setMsg(send.getText());
-                clientCore.chat(aLlMessageObject,Act.SEND);
+                aLlMessageObject.setMsg(msg);
+                clientCore.chat(aLlMessageObject, Act.SEND);
+            }else{
+                alert(UserConst.EMPTY_MSG,"ERROR");
+            }
 
         }
     }
     class ClientCore extends AbstractClientDispatcher {
         ClientCore(Socket socket) throws IOException {
             super(username,socket);
-//            super(new Socket("localhost", 8888));
             //client连接到了服务端
             //第一步就是发送一个refresh请求,得到当前在线的人和朋友
-            IntroduceObject introduceObject = new IntroduceObject();
-            introduceObject.setName(username);
-            introduceSelf(introduceObject);
+
         }
         public void onlineChange(boolean flag){
             onlineList.setEnabled(flag);

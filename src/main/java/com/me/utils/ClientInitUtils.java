@@ -18,6 +18,9 @@ public class ClientInitUtils {
         }
 
     }
+    public static void setHost(String host){
+        pro.setProperty("host",host);
+    }
     public static String getHost(){
         return pro.getProperty("host");
     }
