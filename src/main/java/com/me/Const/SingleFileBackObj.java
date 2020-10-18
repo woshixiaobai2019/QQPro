@@ -1,13 +1,13 @@
 package com.me.Const;
 
-import java.io.File;
+import com.me.Interface.Message;
+
 import java.io.Serializable;
 
-public class SingleFileObj implements Serializable {
+public class SingleFileBackObj implements Message, Serializable {
     private String from;
     private String to;
-    private String fileName;
-    private String path;
+    private boolean confirm;
     private long size;
 
     public String getFrom() {
@@ -26,41 +26,28 @@ public class SingleFileObj implements Serializable {
         this.to = to;
     }
 
-    public String getFileName() {
-        return fileName;
+    public boolean isConfirm() {
+        return confirm;
     }
 
-    public void setFileName(String fileName) {
-        this.fileName = fileName;
+    public void setConfirm(boolean confirm) {
+        this.confirm = confirm;
     }
 
     public long getSize() {
-        return size;
+        return this.size;
     }
 
     public void setSize(long size) {
         this.size = size;
     }
 
-    public SingleFileObj() {
-
-    }
-
-    public String getPath() {
-        return path;
-    }
-
-    public void setPath(String path) {
-        this.path = path;
-    }
-
-
     @Override
     public String toString() {
-        return "SingleFileObj{" +
+        return "SingleFileBackObj{" +
                 "from='" + from + '\'' +
                 ", to='" + to + '\'' +
-                ", fileName='" + fileName + '\'' +
+                ", confirm=" + confirm +
                 ", size=" + size +
                 '}';
     }

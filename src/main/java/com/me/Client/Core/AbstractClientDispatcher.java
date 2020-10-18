@@ -4,6 +4,7 @@ import com.me.Const.*;
 import com.me.Interface.Act;
 import com.me.Interface.ClientInterface;
 import com.me.Interface.Dispatcher;
+import com.me.utils.Logger;
 import com.me.utils.MyIOUtils;
 import java.io.IOException;
 import java.net.Socket;
@@ -11,11 +12,10 @@ import java.net.Socket;
 public abstract class AbstractClientDispatcher implements Dispatcher, ClientInterface {
         private boolean running = true;
         public Socket socket;
-        private final String name;
-        AbstractClientDispatcher(String name,Socket socket){
+
+    AbstractClientDispatcher(String name,Socket socket){
             this.socket = socket;
-            this.name = name;
-        }
+    }
 
         @Override
         public void run() {
@@ -38,6 +38,8 @@ public abstract class AbstractClientDispatcher implements Dispatcher, ClientInte
                         addFriend((AddFriendObject) o,Act.RECV);
                     }else if (o instanceof DeleteFriendObject){
                         deleteFriend((DeleteFriendObject) o,Act.RECV);
+                    }else if (o instanceof SingleFileBackObj){
+                        singleFileBack((SingleFileBackObj) o,Act.RECV);
                     }
             } catch (IOException e) {
                 this.running = false;

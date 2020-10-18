@@ -16,10 +16,11 @@ import java.net.Socket;
 import java.util.*;
 
 public class SocketServer{
-    private RefreshObject refreshObject = new RefreshObject();
+    private final RefreshObject refreshObject = new RefreshObject();
     private boolean running = true;
     private final Object object = new Object();
     private final Map<String, Socket> users = new HashMap<String,Socket>();
+    private final Map<String, Socket> userFile = new HashMap<String,Socket>();
     private Integer online = 0;
     private final ServerSocket serverSocket;
     private final UserService userService = new UserServiceImpl();
@@ -90,15 +91,35 @@ public class SocketServer{
         return users.containsKey(name);
     }
     class Handler extends AbstractServerDispatcher{
-
-        private String name;
-        private boolean closed = false;
         Handler(Socket socket){
             super(socket);
 //            spread(getOnlineName(),true);
             refresh(null,Act.SEND); // FIXME: 2020/10/11 用请求的方式获取在线的人
         }
+        @Override
+        public void singleFileBack(SingleFileBackObj obj, String recv) {
+            Socket from = users.get(obj.getTo());
+            Socket fileFrom = userFile.get(obj.getTo());
+            Socket fileTo = userFile.get(obj.getFrom());
+            try {
+                MyIOUtils.send(obj,from.getOutputStream());
+                if (obj.isConfirm()){
+                    new Thread(()->{
+                        try {
+                            MyIOUtils.swap(fileFrom.getInputStream(), fileTo.getOutputStream(), obj.getSize());
+                        } catch (IOException e) {
+                            offLine_();
+                            e.printStackTrace();
+                        }
+                    }).start(); //开一个新的线程去用于传输文件,不知道为啥不能开多线程
+                    //接受来自对方的文件流
+                }
+            } catch (IOException e) {
 
+                offLine_();
+
+            }
+        }
         @Override
         protected void singleChat(SingleChatObj obj) {
             Socket friend = users.get(obj.getTo());
@@ -126,16 +147,7 @@ public class SocketServer{
             running = false;
         }
         private void singleContact(SingleFileObj singleFileObj) {
-            Socket socket = users.get(singleFileObj.getTo());
-            try {
 
-                MyIOUtils.send(singleFileObj,socket.getOutputStream());
-                MyIOUtils.swap(this.socket.getInputStream(),socket.getOutputStream(),singleFileObj.getSize());
-            } catch (IOException e) {
-                offLine_();
-                this.close();
-                Logger.error(e.getMessage());
-            }
 
             
 
@@ -186,14 +198,18 @@ public class SocketServer{
         @Override
         public void introduceSelf(IntroduceObject obj) {
             this.name = obj.getName();
-            users.put(this.name,this.socket);
-            refresh(null,Act.SEND);
-            Logger.info("当前在线::"+ Arrays.toString(getOnlineName()));
+            this.type = obj.getType();
+            if (obj.getType().equals(TransferType.user)) {
+                users.put(this.name, this.socket);
+                refresh(null, Act.SEND);
+                Logger.info("当前在线::" + Arrays.toString(getOnlineName()));
+            }else{
+                userFile.put(this.name,this.socket);
+            }
         }
 
         private void close(){
             try {
-                this.closed = true;
                 this.socket.close();
             } catch (IOException e) {
                 Logger.error(e.getMessage());
@@ -203,7 +219,14 @@ public class SocketServer{
 
         @Override
         public void singleFile(SingleFileObj obj, String act) {
-            singleContact(obj);
+            Socket socket = users.get(obj.getTo());
+            try {
+                MyIOUtils.send(obj,socket.getOutputStream());
+            } catch (IOException e) {
+                offLine_();
+                this.close();
+                Logger.error(e.getMessage());
+            }
         }
 
         @Override

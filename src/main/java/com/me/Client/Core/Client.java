@@ -6,6 +6,7 @@ import com.me.Const.*;
 import com.me.Interface.Act;
 import com.me.Server.Service.UserService;
 import com.me.Server.Service.UserServiceImpl;
+import com.me.utils.ClientInitUtils;
 import com.me.utils.Logger;
 import com.me.utils.MyIOUtils;
 import com.me.utils.IOGUIUtils;
@@ -44,6 +45,7 @@ public class Client extends JFrame {
         new Thread(clientCore).start();
         IntroduceObject introduceObject = new IntroduceObject(); //等界面加载完毕之后再发送
         introduceObject.setName(username);
+        introduceObject.setType(TransferType.user);
         clientCore.introduceSelf(introduceObject);
     }
     private void init() {
@@ -149,7 +151,10 @@ public class Client extends JFrame {
         JDialog dialog = pane.createDialog(this, type);
         dialog.show();
     }
-
+    private boolean confirm(SingleFileObj obj){
+        String msg = "来自"+obj.getFrom()+"的"+obj.getFileName()+",文件大小:"+MyIOUtils.fileSizeFormat(obj.getSize());
+        return JOptionPane.showConfirmDialog(this,msg,"是否接收文件",JOptionPane.YES_NO_OPTION)==0;
+    }
     /**
      *
      * @param path 选择的文件的路径
@@ -347,8 +352,11 @@ public class Client extends JFrame {
         }
     }
     class ClientCore extends AbstractClientDispatcher {
+        private final Socket fileSocket;
         ClientCore(Socket socket) throws IOException {
             super(username,socket);
+            fileSocket = new Socket(ClientInitUtils.getHost(),ClientInitUtils.getPort());
+
             //client连接到了服务端
             //第一步就是发送一个refresh请求,得到当前在线的人和朋友
 
@@ -367,23 +375,30 @@ public class Client extends JFrame {
         @Override
         public void singleFile(SingleFileObj obj,String act) {
             if (act.equals(Act.RECV)){
-                try {
-                    alert(IOGUIUtils.recv(obj,this.socket.getInputStream()),"INFO");
-                } catch (IOException e) {
-                    alert(UserConst.SERVER_CLOSED,"INFO");
-                    System.exit(0);
+                SingleFileBackObj singleFileBackObj = new SingleFileBackObj();
+                singleFileBackObj.setConfirm(false);
+                singleFileBackObj.setFrom(obj.getTo());
+                singleFileBackObj.setTo(obj.getFrom());
+                singleFileBackObj.setSize(obj.getSize());
+                if (confirm(obj)){
+                    singleFileBackObj.setConfirm(true);
+                    new Thread(()->{
+                        try {
+                            alert(IOGUIUtils.recv(obj,fileSocket.getInputStream(),true),"INFO");
+                        } catch (IOException e) {
+                            alert(UserConst.SERVER_CLOSED,"INFO");
+                        }
+                    }).start(); //开一个新的线程接受文件
                 }
+                //返回用户的确认结果
+                singleFileBack(singleFileBackObj,Act.SEND);
             }else if (act.equals(Act.SEND)){
                 try {
                     IOGUIUtils.send(obj,socket.getOutputStream());
-                    alert(UserConst.SEND_FINISH,"INFO");
                 } catch (IOException e) {
                     alert(UserConst.SERVER_CLOSED,"INFO");
                 }
-
             }
-
-
         }
         @Override
         public void deleteFriend(DeleteFriendObject obj, String act) {
@@ -470,8 +485,36 @@ public class Client extends JFrame {
         public void introduceSelf(IntroduceObject obj) {
             try {
                 MyIOUtils.send(obj,this.socket.getOutputStream());
+                obj.setType(TransferType.file);
+                MyIOUtils.send(obj,this.fileSocket.getOutputStream());
             } catch (IOException e) {
                 alert(UserConst.SERVER_CLOSED,"INFO");
+            }
+        }
+
+        @Override
+        public void singleFileBack(SingleFileBackObj obj, String recv) {
+            if (recv.equals(Act.RECV)){
+                if (!obj.isConfirm()){
+                    alert(UserConst.FILE_REFUSED_RECV,"INFO");
+                }else{
+                    //开始发送文件
+                        new Thread(()->{
+                            try {
+                                IOGUIUtils.fileTransfer(path,fileSocket.getOutputStream());
+                                alert(UserConst.SEND_FINISH,"INFO");
+                            } catch (IOException e) {
+                                alert(UserConst.SERVER_CLOSED,"INFO");
+                            }
+
+                        }).start(); //开一个新线程去连接
+                }
+            }else{
+                try {
+                    MyIOUtils.send(obj,socket.getOutputStream());
+                } catch (IOException e) {
+                    alert(UserConst.SERVER_CLOSED,"INFO");
+                }
             }
         }
     }

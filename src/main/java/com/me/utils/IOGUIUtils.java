@@ -36,37 +36,41 @@ public class IOGUIUtils {
         jTextArea.append(s+"\n");
     }
 
-    public static String recv(SingleFileObj obj,InputStream is) throws IOException{
-        String fileName = obj.getFileName();
-
-        File file = new File(prefix + File.separator + obj.getFrom() + File.separator + fileName);
-        if (!file.exists()){
-            boolean mkdirs = file.getParentFile().mkdirs();
-        }
-        boolean newFile = file.createNewFile();
-        FileOutputStream fos = new FileOutputStream(file);
-        long read_size = 0;
-        long file_size = obj.getSize();
-        byte[] content = new byte[1024 * 500];
-        int read = 0;
-        while (read_size<file_size){
-            read=is.read(content);
-            fos.write(content,0,read);
-            fos.flush();
-            read_size += Math.max(read, 0);
-        }
-        fos.close();
-        if (read_size == file_size){
-            return UserConst.RECV_FINNISH;
-        }else{
-            return UserConst.FILE_BROKEN;
-        }
+    public static String recv(SingleFileObj obj,InputStream is,boolean recv) throws IOException{
+       if (recv){
+           String fileName = obj.getFileName();
+           File file = new File(prefix + File.separator + obj.getFrom() + File.separator + fileName);
+           if (!file.exists()){
+               boolean mkdirs = file.getParentFile().mkdirs();
+           }
+           boolean newFile = file.createNewFile();
+           FileOutputStream fos = new FileOutputStream(file);
+           long read_size = 0;
+           long file_size = obj.getSize();
+           byte[] content = new byte[UserConst.batch_size];
+           int read = 0;
+           while (read_size<file_size){
+               read=is.read(content);
+               fos.write(content,0,read);
+               fos.flush();
+               read_size += Math.max(read, 0);
+           }
+           fos.close();
+           if (read_size == file_size){
+               return UserConst.RECV_FINNISH;
+           }else{
+               return UserConst.FILE_BROKEN;
+           }
+       }else{
+           return "";
+       }
 
 
     }
+    //发送文件到服务器
     public static void fileTransfer(String path,OutputStream os) throws IOException{
         FileInputStream fis = new FileInputStream(path);
-        byte[] content = new byte[1024 * 500]; //每次读500k
+        byte[] content = new byte[UserConst.batch_size]; //每次读500k
         int read;
         while ((read=fis.read(content))!=-1){
             os.write(content,0,read);
@@ -79,7 +83,7 @@ public class IOGUIUtils {
         ObjectOutputStream ous = new ObjectOutputStream(os);
         ous.writeObject(obj);
         ous.flush(); //发送文件信息对象
-        fileTransfer(obj.getPath(), os);
+        //fileTransfer(obj.getPath(), os);
     }
 
 }

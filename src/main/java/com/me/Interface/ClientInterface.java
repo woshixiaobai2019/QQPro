@@ -12,6 +12,13 @@ public interface ClientInterface {
 
     /**
      *
+     * @param obj 文件请求确认对象
+     * @param recv 是发送还是接受
+     */
+    void singleFileBack(SingleFileBackObj obj,String recv);
+
+    /**
+     *
      * @param obj
      * @param act
      */
